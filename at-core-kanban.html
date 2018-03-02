@@ -1,15 +1,24 @@
 <link rel="import" href="../tangere/tangere.html" />
+<link rel="import" href="../at-core-style-classes/at-core-style-classes.html" />
+<link rel="import" href="../at-core-spinner/at-core-spinner.html" />
+<link rel="import" href="../at-carbon-message/at-carbon-message.html" />
 
 <dom-module id="at-core-kanban">
   <template>
-    <style>
+    <style include="at-core-style-classes">
       :host {
         display: block;
         box-sizing: border-box;
+
+        border: 1px solid purple;
+        padding: 8px;
       }
     </style>
 
-    <div>at-core-kanban works!</div>
+    <at-core-spinner id="coreSpinner"></at-core-spinner>
+    <at-carbon-message id="carbonMessage" type="info"></at-carbon-message>
+
+    <div id="columnContainer" hidden>at-core-kanban works!</div>
   </template>
 </dom-module>
 <script>
@@ -17,9 +26,215 @@
     is: "at-core-kanban",
     properties: {
 
-    },
-    ready: function () {
+      columns: {
+        type: Array,
+        value: function() {
+          return [];
+        },
+        xgridcols: "12",
+        schema: {
+          properties: {
+            id: {
+              type: String,
+              value: ''
+            },
+            title: {
+              type: String,
+              value: ''
+            }
+          }
+        }
+      },
 
+      columnPath: {
+        type: String,
+        value: 'prio'
+      },
+
+      items: {
+        type: Array,
+        value: function() {
+          return [];
+        },
+        xgridcols: "12",
+        schema: {
+          properties: {
+            id: {
+              type: String,
+              value: ''
+            },
+            title: {
+              type: String,
+              value: ''
+            },
+            prio: {
+              type: String,
+              value: ''
+            }
+          }
+        }
+      },
+
+      layout: {
+        type: String,
+        value: "list",
+        notify: true,
+        xtype: "enum",
+        available: "card,list"
+      },
+
+      itemComponent: {
+        type: String,
+        value: "",
+        notify: true
+      },
+
+      cardWidth: {
+        type: String,
+        value: "320",
+        notify: true
+      },
+
+      cardHeight: {
+        type: String,
+        value: "",
+        notify: true
+      },
+
+      view: {
+        type: String,
+        value: "",
+        notify: true,
+        xtype: "code",
+        mode: "carbon",
+        xgridcols: "12"
+      },
+
+      indicator: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true
+      },
+
+      height: {
+        type: String,
+        value: "120px"
+      },
+
+      emptyList: {
+        type: String,
+        value: "No data found"
+      }
+    },
+
+    $meta: [{
+      title: "Kanban board",
+      type: "element",
+      xtype: "at-core-kanban",
+      invisible: true
+    }],
+
+    observers: [
+      '_initialize(columns.*, columnPath, items.*, layout, itemComponent, cardWidth, cardHeight, view, indicator, height, emptyList)'
+    ],
+
+    ready: function () { },
+
+    _showSpinner: function() {
+      this.$.coreSpinner.removeAttribute('hidden');
+    },
+
+    _hideSpinner: function() {
+      this.$.coreSpinner.setAttribute('hidden', true);
+    },
+
+    _showMessage: function(text) {
+      this.$.carbonMessage.html = text;
+    },
+
+    _clearMessage: function() {
+      this.$.carbonMessage.html = '';
+    },
+
+    _initialize: function(columnsSplices, columnPath, itemsSplices, layout, itemComponent, cardWidth, cardHeight, view, indicator, height, emptyList) {
+
+      this._showSpinner();
+      this._clearMessage();
+
+      var self = this;
+      this.debounce('debounce-internal-initialize', function() {
+        self._internalInitialize(columnsSplices, columnPath, itemsSplices, layout, itemComponent, cardWidth, cardHeight, view, indicator, height, emptyList);
+      }, 100);
+    },
+
+    _internalInitialize: function(columnsSplices, columnPath, itemsSplices, layout, itemComponent, cardWidth, cardHeight, view, indicator, height, emptyList) {
+
+      var columns = columnsSplices.value;
+      var items = itemsSplices.value;
+
+      if (!this._isArray(columns) || !columns.length) {
+        this._hideSpinner();
+        this._showMessage(emptyList);
+        console.log("Columns property value of " + JSON.stringify(columns) + " is invalid or empty.");
+        return;
+      }
+
+      if (!this._isArray(items) || !items.length) {
+        this._hideSpinner();
+        this._showMessage(emptyList);
+        console.log("Items property value of " + JSON.stringify(items) + " is invalid or empty.");
+        return;
+      }
+
+      var viewPresent = this._isString(view) && view.length;
+      var itemComponentPresent = this._isString(itemComponent) && itemComponent.length;
+      if (!viewPresent && !itemComponentPresent) {
+        this._hideSpinner();
+        this._showMessage("Please provide .view or .itemComponent property.");
+        return;
+      }
+
+      // if itemComponent is present and view is not present, use itemComponent
+      // if itemComponent is not present and view is present, use at-core-view
+      // if itemComponent is present and view is present, use itemComponent
+      var componentPath = itemComponentPresent ? itemComponent : "at-core-view";
+
+      // TODO continue from here
+      // TODO continue from here
+      // TODO continue from here
+      // TODO continue from here
+      // TODO continue from here
+      // TODO continue from here
+      // TODO continue from here
+      // TODO continue from here
+
+      // extract elementName from componentPath
+
+      // check if elementName already exists in polymer.telemetry.registrations
+
+      // if exists do the rendering
+
+      // if not compute import url and use importHref to load
+
+      this._render(columns, columnPath, items, layout, itemComponent, cardWidth, cardHeight, view, indicator, height, emptyList);
+    },
+
+    _render: function(columns, columnPath, items, layout, itemComponent, cardWidth, cardHeight, view, indicator, height, emptyList) {
+
+      this._hideSpinner();
+      this._clearMessage();
+    },
+
+    //
+    // Helper functions
+    //
+    _isArray: function(obj) {
+      return Object.prototype.toString.apply(obj) === "[object Array]";
+    },
+
+    _isString: function(obj) {
+      return Object.prototype.toString.apply(obj) === "[object String]";
     }
+
   });
 </script>

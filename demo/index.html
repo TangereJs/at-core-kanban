@@ -16,10 +16,27 @@
 </head>
 
 <body>
-  <at-core-kanban></at-core-kanban>
+  <at-core-kanban id="coreKanban"></at-core-kanban>
 
   <script>
     document.addEventListener('WebComponentsReady', function() {
+      var coreKanban = document.getElementById('coreKanban');
+
+      var columns = [
+        { id: "low", title: "Low" },
+        { id: "high", title: "High" }
+      ];
+      coreKanban.columns = columns;
+
+      var items = [
+        { prio: "low", id: 1, title: "Test 1" },
+        { prio: "high", id: 2, title: "Test 2" },
+        { prio: "low", id: 3, title: "Test 1" },
+        { prio: "high", id: 4, title: "Test 2" },
+        { prio: "low", id: 5, title: "Test 1" },
+        { prio: "high", id: 6, title: "Test 2" }
+      ];
+      coreKanban.items = items;
 
     });
   </script>
