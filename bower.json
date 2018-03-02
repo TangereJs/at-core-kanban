@@ -1,0 +1,8 @@
+{
+  "name": "at-core-kanban",
+  "version": "1.0..0",
+  "private": true,
+  "dependencies": {
+    "tangere": "TangereJs/tangere#master"
+  }
+}
