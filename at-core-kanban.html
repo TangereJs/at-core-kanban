@@ -199,27 +199,49 @@
       // if itemComponent is present and view is present, use itemComponent
       var componentPath = itemComponentPresent ? itemComponent : "at-core-view";
 
-      // TODO continue from here
-      // TODO continue from here
-      // TODO continue from here
-      // TODO continue from here
-      // TODO continue from here
-      // TODO continue from here
-      // TODO continue from here
-      // TODO continue from here
-
       // extract elementName from componentPath
+      // if itemComponent is not present use componentPath as element name because componentPath is set to at-core-view
+      // if itemComponent is present extract elementName from componentPath
+      var elementName = itemComponentPresent ?
+        this._computeElementNameFromComponentPath(componentPath) : componentPath;
 
       // check if elementName already exists in polymer.telemetry.registrations
+      var registrations = Polymer.telemetry.registrations;
+      var registrationsLength = registrations.length;
+      var found = false;
+      for (var i = 0; i < registrationsLength && !found; i++) {
+        var reg = registrations[i];
+        found = reg.is === elementName;
+      }
 
       // if exists do the rendering
+      if (found) {
+        this._render(columns, columnPath, items, layout, elementName, cardWidth, cardHeight, view, height);
 
-      // if not compute import url and use importHref to load
+      } else {
+        // if not compute import url and use importHref to load
+        var self = this;
+        var importUrl = this._computeImportUrlFromComponentPath(componentPath);
+        this.importHref(
+          importUrl,
+          function() { // success callback
+            self._render(columns, columnPath, items, layout, elementName, cardWidth, cardHeight, view, height);
+          },
+          function() { // error callback
+            Polymer.signal("busy-end");
+            var restart = confirm(window.location.href + "\n\nERROR: failed to load list item " + this.itemComponent);
 
-      this._render(columns, columnPath, items, layout, itemComponent, cardWidth, cardHeight, view, indicator, height, emptyList);
+            if (restart) {
+              location.hash = ""; // clear current hash
+              location.reload(); // go to start app by reloading without hash
+            }
+          },
+          true // import will be async
+        );
+      }
     },
 
-    _render: function(columns, columnPath, items, layout, itemComponent, cardWidth, cardHeight, view, indicator, height, emptyList) {
+    _render: function(columns, columnPath, items, layout, elementName, cardWidth, cardHeight, view, height) {
 
       this._hideSpinner();
       this._clearMessage();
@@ -234,6 +256,50 @@
 
     _isString: function(obj) {
       return Object.prototype.toString.apply(obj) === "[object String]";
+    },
+
+    _computeElementNameFromComponentPath: function(componentPath) {
+      var eltName = '';
+
+      var resolve = { namePrefix: "" };
+      this.fire("resolve-name-prefix", resolve);
+      var prefix = resolve.namePrefix;
+
+      // if componentPath is default.view and prefix is not empty return prefix as element name
+      if (componentPath === "default.view" && prefix.length > 0) {
+        return prefix.length > 0 ? prefix : eltName;
+      }
+
+      if (componentPath.indexOf(".card") > 0) {
+        // if componentPath is "default.card" reduce to "card"
+        // if componentPath is not "default.card" it remains as is
+        eltName = componentPath.replace("default.", "");
+
+        // if componentPath is "foo.card" it should become "foo-card"
+        eltName = eltName.replace(".", "-");
+
+        var nameParts = [ prefix, "-", eltName ];
+        eltName = nameParts.join("");
+        return eltName;
+
+      } else {
+        // if componentPath is not default.view and doesn't end with .card it can be
+        // 1) item-component (from local folder)
+        // 2) component-name/item-component (from other component)
+        if (componentPath.indexOf("/") === -1) {
+          // this is from local folder
+          return componentPath;
+
+        } else {
+          var pathParts = componentPath.split("/");
+          eltName = pathParts[1];
+          return eltName;
+        }
+      }
+    },
+
+    _computeImportUrlFromComponentPath: function(componentPath) {
+
     }
 
   });
