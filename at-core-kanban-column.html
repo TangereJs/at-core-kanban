@@ -1,0 +1,69 @@
+<link rel="import" href="../tangere/tangere.html" />
+<link rel="import" href="../at-core-style-classes/at-core-style-classes.html" />
+
+<dom-module id="at-core-kanban-column">
+  <template>
+    <style include="at-core-style-classes">
+      :host {
+        display: block;
+        box-sizing: border-box;
+        padding: 4px;
+
+        min-height: 640px;
+
+        border: 1px solid crimson;
+      }
+    </style>
+
+    <div class="layout-horizontal">
+      <label class="layout-flex font-body1">[[title]]</label>
+      <div class="font-body1">[[_itemCount]]</div>
+    </div>
+    <hr>
+    <div class="layout-vertical">
+      <content id="contentContainer"></content>
+    </div>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: "at-core-kanban-column",
+    properties: {
+      id: {
+        type: String,
+        value: '',
+        reflectToAttribute: true
+      },
+
+      title: {
+        type: String,
+        value: ''
+      },
+
+      _itemCount: {
+        type: Number,
+        value: 0
+      }
+
+    },
+
+    attached: function() {
+      var self = this;
+      this._contentChildrenObserver = Polymer.dom(this.$.contentContainer).observeNodes(function(observeInfo) {
+          if (
+            observeInfo.addedNodes.length === 1 &&
+            observeInfo.addedNodes[0].classList.contains('kanban-item-placeholder')
+          ) return;
+
+          var distributedChildren = Polymer.dom(this).getDistributedNodes();
+          self._itemCount = distributedChildren.length;
+      });
+    },
+
+    detached: function() {
+      Polymer.dom(this.$.contentContainer).unobserveNodes(this._contentChildrenObserver);
+    },
+
+    ready: function () { }
+  });
+</script>

@@ -2,6 +2,8 @@
 <link rel="import" href="../at-core-style-classes/at-core-style-classes.html" />
 <link rel="import" href="../at-core-spinner/at-core-spinner.html" />
 <link rel="import" href="../at-carbon-message/at-carbon-message.html" />
+<link rel="import" href="../at-core-signals/at-core-signals.html" />
+<link rel="import" href="at-core-kanban-column.html" />
 
 <dom-module id="at-core-kanban">
   <template>
@@ -13,12 +15,37 @@
         border: 1px solid purple;
         padding: 8px;
       }
+
+      .kanban-column {
+        margin-right: 4px;
+      }
+
+      .kanban-column:last-child {
+        margin-right: 0;
+      }
+
+      .kanban-item {
+        margin-top: 4px;
+      }
+
+      .kanban-item.dragging {
+        box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        transform: rotate(-2deg);
+      }
+
+      .kanban-item-placeholder {
+        display: block;
+        height: 34px;
+        border: 1px dashed #ddd;
+        margin: 3px 0;
+        border-radius: 5px;
+      }
     </style>
 
     <at-core-spinner id="coreSpinner"></at-core-spinner>
     <at-carbon-message id="carbonMessage" type="info"></at-carbon-message>
 
-    <div id="columnContainer" hidden>at-core-kanban works!</div>
+    <div id="columnContainer" class="layout-horizontal" hidden></div>
   </template>
 </dom-module>
 <script>
@@ -140,6 +167,38 @@
 
     ready: function () { },
 
+    attached: function() {
+
+      if (!this._boundDragStartEvent) {
+        this._boundDragStartEvent = this._handleDragStartEvent.bind(this);
+      }
+
+      if (!this._boundDragEndEvent) {
+        this._boundDragEndEvent = this._handleDragEndEvent.bind(this);
+      }
+
+      if (!this._boundDragOverEvent) {
+        this._boundDragOverEvent = this._handleDragOverEvent.bind(this);
+      }
+
+      if (!this._boundDropEvent) {
+        this._boundDropEvent = this._handleDropEvent.bind(this);
+      }
+
+      this._live('dragstart', '.kanban-item', this._boundDragStartEvent);
+      this._live('dragend', '.kanban-item', this._boundDragEndEvent);
+
+      this._live('dragover', '.kanban-column, .kanban-item, .kanban-item-placeholder', this._boundDragOverEvent);
+      this._live('drop', '.kanban-column, .kanban-item-placeholder', this._boundDropEvent);
+    },
+
+    detached: function() {
+      this.$.columnContainer.removeEventListener('dragstart', this._boundDragStartEvent);
+      this.$.columnContainer.removeEventListener('dragend', this._boundDragEndEvent);
+      this.$.columnContainer.removeEventListener('dragover', this._boundDragOverEvent);
+      this.$.columnContainer.removeEventListener('drop', this._boundDropEvent);
+    },
+
     _showSpinner: function() {
       this.$.coreSpinner.removeAttribute('hidden');
     },
@@ -194,57 +253,153 @@
         return;
       }
 
-      // if itemComponent is present and view is not present, use itemComponent
-      // if itemComponent is not present and view is present, use at-core-view
-      // if itemComponent is present and view is present, use itemComponent
-      var componentPath = itemComponentPresent ? itemComponent : "at-core-view";
-
-      // extract elementName from componentPath
-      // if itemComponent is not present use componentPath as element name because componentPath is set to at-core-view
-      // if itemComponent is present extract elementName from componentPath
-      var elementName = itemComponentPresent ?
-        this._computeElementNameFromComponentPath(componentPath) : componentPath;
-
-      // check if elementName already exists in polymer.telemetry.registrations
-      var registrations = Polymer.telemetry.registrations;
-      var registrationsLength = registrations.length;
-      var found = false;
-      for (var i = 0; i < registrationsLength && !found; i++) {
-        var reg = registrations[i];
-        found = reg.is === elementName;
+      var elementName = itemComponentPresent ? itemComponent : "at-core-view";
+      var fsIndex = itemComponent.indexOf("/");
+      if (itemComponentPresent && fsIndex > 0) {
+        elementName = itemComponent.substring(fsIndex + 1);
       }
 
-      // if exists do the rendering
-      if (found) {
-        this._render(columns, columnPath, items, layout, elementName, cardWidth, cardHeight, view, height);
+      var importUrl = this._computeImportUrlFromComponentPath(itemComponent);
+      var self = this;
+      this.importHref(
+        importUrl,
+        function() { // success callback
+          self._render(columns, columnPath, items, layout, elementName, cardWidth, cardHeight, view, height);
+        },
+        function() { // error callback
+          Polymer.signal("busy-end");
+          var restart = confirm(window.location.href + "\n\nERROR: failed to load list item " + this.itemComponent);
 
-      } else {
-        // if not compute import url and use importHref to load
-        var self = this;
-        var importUrl = this._computeImportUrlFromComponentPath(componentPath);
-        this.importHref(
-          importUrl,
-          function() { // success callback
-            self._render(columns, columnPath, items, layout, elementName, cardWidth, cardHeight, view, height);
-          },
-          function() { // error callback
-            Polymer.signal("busy-end");
-            var restart = confirm(window.location.href + "\n\nERROR: failed to load list item " + this.itemComponent);
-
-            if (restart) {
-              location.hash = ""; // clear current hash
-              location.reload(); // go to start app by reloading without hash
-            }
-          },
-          true // import will be async
-        );
-      }
+          if (restart) {
+            location.hash = ""; // clear current hash
+            location.reload(); // go to start app by reloading without hash
+          }
+        },
+        true // import will be async
+      );
     },
+
+    // @CODEFOR layout
+    // @CODEFOR cardWidth
+    // @CODEFOR cardHeight
+    // @CODEFOR height
 
     _render: function(columns, columnPath, items, layout, elementName, cardWidth, cardHeight, view, height) {
 
       this._hideSpinner();
       this._clearMessage();
+
+      Polymer.dom(this.$.columnContainer).innerHTML = '';
+
+      this.$.columnContainer.removeAttribute('hidden');
+
+      columns.forEach(function(column) {
+        var columnElt = this.create('at-core-kanban-column', { id: column.id, title: column.title });
+        Polymer.dom(columnElt).classList.add('layout-flex');
+        Polymer.dom(columnElt).classList.add('kanban-column');
+
+        Polymer.dom(this.$.columnContainer).appendChild(columnElt);
+
+      }, this);
+
+      items.forEach(function(item) {
+        var itemElt = this.create(elementName);
+        Polymer.dom(itemElt).classList.add('kanban-item');
+        Polymer.dom(itemElt).setAttribute('draggable', true);
+        var columnId = this._getObjPath(item, columnPath);
+
+        item._session = Tangere.session;
+
+        if (view) {
+          itemElt.view = view;
+          itemElt.value = item;
+
+        } else if (this._isObject(itemElt.model)) {
+          itemElt.model = item;
+
+        } else {
+          itemElt.item = item;
+        }
+
+        var columnElt = this.$$('#'+columnId);
+        Polymer.dom(columnElt).appendChild(itemElt);
+      }, this);
+
+      Polymer.dom.flush();
+      this.async(function () {
+        this.fire("list-ready");
+      }, 1);
+    },
+
+    _handleDragStartEvent: function(e) {
+      e.target.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', e.target.item.id);
+      e.dataTransfer.dropEffect = "copy";
+      this._isDragging = true;
+    },
+
+    _handleDragEndEvent: function(e) {
+      e.target.classList.remove('dragging');
+      if (this.elCardPlaceholder) {
+        Polymer.dom(Polymer.dom(this.elCardPlaceholder).parentNode).removeChild(this.elCardPlaceholder);
+        this.elCardPlaceholder = null;
+      }
+      this._isDragging = false;
+    },
+
+    _handleDragOverEvent: function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      var t = e.target;
+
+      if (t.classList.contains('kanban-column')) {
+        Polymer.dom(t).appendChild(this._getCardPlaceholder());
+
+      } else if (t.classList.contains('kanban-item')) {
+        Polymer.dom(Polymer.dom(t).parentNode).insertBefore(this._getCardPlaceholder(), t);
+      }
+    },
+
+    _handleDropEvent: function(e) {
+      e.preventDefault();
+      if (!this._isDragging) return false;
+
+      var t = e.target;
+      var itemId = +e.dataTransfer.getData('text');
+
+      // find the item in the this.items array
+      var item = false;
+      for (var i = 0; i < this.items.length && !item; i++) {
+        var curr = this.items[i];
+        item = curr.id === itemId ? curr : false;
+      }
+
+      // find out which column was dragged from
+      var srcColumnId = this._getObjPath(item, this.columnPath);
+      var srcColumn = this.$$("#" + srcColumnId);
+
+      var effectiveChildren = srcColumn.getEffectiveChildren();
+      var child = false;
+      for (var j = 0; j < effectiveChildren.length && !child; j++) {
+        var curr = effectiveChildren[j];
+        // ignore placeholder
+        if (!curr.item) continue;
+        child = curr.item.id === itemId ? curr : false;
+      }
+
+      Polymer.dom(Polymer.dom(child).parentNode).removeChild(child);
+
+      // find out which column was dragged into
+      var destColumn = Polymer.dom(this._getCardPlaceholder()).parentNode;
+      this._setObjPath(child.item, this.columnPath, destColumn.id);
+      this._setObjPath(item, this.columnPath, destColumn.id);
+
+      if (t.classList.contains('kanban-column')) {
+        Polymer.dom(destColumn).appendChild(child);
+
+      } else if (t.classList.contains('kanban-item-placeholder')) {
+        Polymer.dom(destColumn).insertBefore(child, t);
+      }
     },
 
     //
@@ -258,48 +413,87 @@
       return Object.prototype.toString.apply(obj) === "[object String]";
     },
 
-    _computeElementNameFromComponentPath: function(componentPath) {
-      var eltName = '';
-
-      var resolve = { namePrefix: "" };
-      this.fire("resolve-name-prefix", resolve);
-      var prefix = resolve.namePrefix;
-
-      // if componentPath is default.view and prefix is not empty return prefix as element name
-      if (componentPath === "default.view" && prefix.length > 0) {
-        return prefix.length > 0 ? prefix : eltName;
-      }
-
-      if (componentPath.indexOf(".card") > 0) {
-        // if componentPath is "default.card" reduce to "card"
-        // if componentPath is not "default.card" it remains as is
-        eltName = componentPath.replace("default.", "");
-
-        // if componentPath is "foo.card" it should become "foo-card"
-        eltName = eltName.replace(".", "-");
-
-        var nameParts = [ prefix, "-", eltName ];
-        eltName = nameParts.join("");
-        return eltName;
-
-      } else {
-        // if componentPath is not default.view and doesn't end with .card it can be
-        // 1) item-component (from local folder)
-        // 2) component-name/item-component (from other component)
-        if (componentPath.indexOf("/") === -1) {
-          // this is from local folder
-          return componentPath;
-
-        } else {
-          var pathParts = componentPath.split("/");
-          eltName = pathParts[1];
-          return eltName;
-        }
-      }
+    _isObject: function(obj) {
+      return Object.prototype.toString.apply(obj) === "[object Object]";
     },
 
     _computeImportUrlFromComponentPath: function(componentPath) {
+      // expand relative name with name prefix
+      if (componentPath.indexOf(".card") > 0) {
+        var resolve = { namePrefix: "" };
+        this.fire("resolve-name-prefix", resolve);
+        var prefix = resolve.namePrefix;
 
+        if (componentPath == "default.view") componentPath = "";
+        componentPath = componentPath.replace("default.", "");
+
+        componentPath = prefix + "/" + prefix + (componentPath ? ("-" + componentPath.replace(".", "-")) : "");
+      }
+
+      // load item-component from other component (itemComponent = component-name/item-component) or from localfolder (item-component)
+      var compUrl = this.resolveUrl("../");
+      if (document.URL.indexOf("/elements/designer-element/") >= 0) compUrl = "/components/"; // standalone designer preview?
+
+      if (window.ComponentsBase != undefined) compUrl = window.ComponentsBase;
+
+      var compName = componentPath ? componentPath : "at-core-view/at-core-view";
+
+      var importPath = compName.indexOf("/") >= 0 ? compUrl + compName + ".html" : compName + ".html";
+      return importPath;
+    },
+
+    _getObjPath: function (obj, path) {
+      if (!path) return obj;
+      if (!obj) return null;
+
+      var paths = path.split('.'),
+        current = obj;
+
+      for (var i = 0; i < paths.length; ++i) {
+        if (current[paths[i]] == undefined) {
+          return undefined;
+        } else {
+          current = current[paths[i]];
+        }
+      }
+      return current;
+    },
+
+    _setObjPath: function(obj, path, value) {
+      if (!path || !obj) return;
+
+      var pathParts = path.split('.');
+      var current = obj;
+
+      for (var i = 0; i < pathParts.length-1; i++) {
+        var currPart = pathParts[i];
+        if (current[currPart] === undefined) {
+          current[currPart] = {};
+          current = {};
+
+        } else {
+          current = current[currPart];
+        }
+      }
+
+      current[pathParts[pathParts.length-1]] = value;
+    },
+
+    _live: function(eventType, selector, callback) {
+      // @cleanup function(e) should be bound so that it can be removed on detach
+      document.addEventListener(eventType, function (e) {
+        if (e.target.webkitMatchesSelector(selector)) {
+          callback.call(e.target, e);
+        }
+      }, false);
+    },
+
+    _getCardPlaceholder: function() {
+      if(!this.elCardPlaceholder) { // Create if not exists
+        this.elCardPlaceholder = document.createElement('div');
+        Polymer.dom(this.elCardPlaceholder).classList.add('kanban-item-placeholder');
+      }
+      return this.elCardPlaceholder;
     }
 
   });

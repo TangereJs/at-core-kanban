@@ -31,12 +31,15 @@
       var items = [
         { prio: "low", id: 1, title: "Test 1" },
         { prio: "high", id: 2, title: "Test 2" },
-        { prio: "low", id: 3, title: "Test 1" },
-        { prio: "high", id: 4, title: "Test 2" },
-        { prio: "low", id: 5, title: "Test 1" },
-        { prio: "high", id: 6, title: "Test 2" }
+        { prio: "low", id: 3, title: "Test 3" },
+        { prio: "high", id: 4, title: "Test 4" },
+        { prio: "low", id: 5, title: "Test 5" },
+        { prio: "high", id: 6, title: "Test 6" }
       ];
       coreKanban.items = items;
+
+      // coreKanban.view = "<div>This is sparta!!!</div>";
+      coreKanban.itemComponent = "kanban-item";
 
     });
   </script>

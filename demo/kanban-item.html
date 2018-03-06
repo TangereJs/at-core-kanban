@@ -1,0 +1,42 @@
+<link rel="import" href="../../tangere/tangere.html" />
+<link rel="import" href="../../at-core-style-classes/at-core-style-classes.html" />
+
+<dom-module id="kanban-item">
+  <template>
+    <style include="at-core-style-classes">
+      :host {
+        display: block;
+        box-sizing: border-box;
+
+        padding: 16px 0 ;
+        border: 1px solid gold;
+      }
+
+      .debug {
+        border: 1px dashed green;
+      }
+    </style>
+    <div class="debug font-body1">[[_computeTitle(item.title)]]</div>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: "kanban-item",
+    properties: {
+      item: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+      }
+    },
+
+    _computeTitle: function(title) {
+      return title ? title : '';
+    },
+
+    ready: function () {
+
+    }
+  });
+</script>
