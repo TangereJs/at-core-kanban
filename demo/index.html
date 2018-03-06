@@ -10,8 +10,11 @@
   <link rel="import" href="../../at-theme/at-theme.html">
   <link rel="import" href="../at-core-kanban.html">
 
-  <style is="custom-style">
-
+  <style>
+    .my-item {
+      padding: 4px;
+      margin-top: 4px;
+    }
   </style>
 </head>
 
@@ -38,8 +41,8 @@
       ];
       coreKanban.items = items;
 
-      // coreKanban.view = "<div>This is sparta!!!</div>";
-      coreKanban.itemComponent = "kanban-item";
+      coreKanban.view = '<div class="my-item">{{title}}This is sparta!!!</div>';
+      // coreKanban.itemComponent = "kanban-item";
 
     });
   </script>

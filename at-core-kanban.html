@@ -340,7 +340,8 @@
 
     _handleDragStartEvent: function(e) {
       e.target.classList.add('dragging');
-      e.dataTransfer.setData('text/plain', e.target.item.id);
+      var valueProp = e.target[this._vm.itemElementValuePropertyName];
+      e.dataTransfer.setData('text/plain', valueProp.id);
       e.dataTransfer.dropEffect = "copy";
       this._isDragging = true;
     },
@@ -389,9 +390,10 @@
       var child = false;
       for (var j = 0; j < effectiveChildren.length && !child; j++) {
         var curr = effectiveChildren[j];
+        var valueProp = curr[this._vm.itemElementValuePropertyName];
         // ignore placeholder
-        if (!curr.item) continue;
-        child = curr.item.id === itemId ? curr : false;
+        if (!valueProp) continue;
+        child = valueProp.id === itemId ? curr : false;
       }
 
       Polymer.dom(Polymer.dom(child).parentNode).removeChild(child);
