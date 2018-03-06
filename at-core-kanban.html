@@ -165,6 +165,10 @@
       '_initialize(columns.*, columnPath, items.*, layout, itemComponent, cardWidth, cardHeight, view, indicator, height, emptyList)'
     ],
 
+    _vm: {
+      itemElementValuePropertyName: ''
+    },
+
     ready: function () { },
 
     attached: function() {
@@ -313,12 +317,15 @@
         if (view) {
           itemElt.view = view;
           itemElt.value = item;
+          this._vm.itemElementValuePropertyName = 'value';
 
         } else if (this._isObject(itemElt.model)) {
           itemElt.model = item;
+          this._vm.itemElementValuePropertyName = 'model';
 
         } else {
           itemElt.item = item;
+          this._vm.itemElementValuePropertyName = 'item';
         }
 
         var columnElt = this.$$('#'+columnId);
@@ -391,7 +398,7 @@
 
       // find out which column was dragged into
       var destColumn = Polymer.dom(this._getCardPlaceholder()).parentNode;
-      this._setObjPath(child.item, this.columnPath, destColumn.id);
+      this._setObjPath(child[this._vm.itemElementValuePropertyName], this.columnPath, destColumn.id);
       this._setObjPath(item, this.columnPath, destColumn.id);
 
       if (t.classList.contains('kanban-column')) {
