@@ -188,18 +188,18 @@
         this._boundDropEvent = this._handleDropEvent.bind(this);
       }
 
-      this._live('dragstart', '.kanban-item', this._boundDragStartEvent);
-      this._live('dragend', '.kanban-item', this._boundDragEndEvent);
+      this._dragStartCallbackRef = this._live('dragstart', '.kanban-item', this._boundDragStartEvent);
+      this._dragEndCallbackRef = this._live('dragend', '.kanban-item', this._boundDragEndEvent);
 
-      this._live('dragover', '.kanban-column, .kanban-item, .kanban-item-placeholder', this._boundDragOverEvent);
-      this._live('drop', '.kanban-column, .kanban-item-placeholder', this._boundDropEvent);
+      this._dragOverCallbackRef = this._live('dragover', '.kanban-column, .kanban-item, .kanban-item-placeholder', this._boundDragOverEvent);
+      this._dropCallbackRef = this._live('drop', '.kanban-column, .kanban-item-placeholder', this._boundDropEvent);
     },
 
     detached: function() {
-      this.$.columnContainer.removeEventListener('dragstart', this._boundDragStartEvent);
-      this.$.columnContainer.removeEventListener('dragend', this._boundDragEndEvent);
-      this.$.columnContainer.removeEventListener('dragover', this._boundDragOverEvent);
-      this.$.columnContainer.removeEventListener('drop', this._boundDropEvent);
+      this._unlive('dragstart', this._dragStartCallbackRef);
+      this._unlive('dragend', this._dragEndCallbackRef);
+      this._unlive('dragover', this._dragOverCallbackRef);
+      this._unlive('drop', this._dropCallbackRef);
     },
 
     _hideColumnContainer: function() {
@@ -520,12 +520,23 @@
     },
 
     _live: function(eventType, selector, callback) {
-      // @cleanup function(e) should be bound so that it can be removed on detach
-      document.addEventListener(eventType, function (e) {
-        if (e.target.matches(selector)) {
-          callback.call(e.target, e);
-        }
-      }, false);
+      var handlerRef = this._handleDragAndDropGenericHandler.bind({
+        selector: selector,
+        callback: callback
+      });
+
+      this.addEventListener(eventType, handlerRef, false);
+
+      return handlerRef;
+    },
+
+    _unlive: function(eventType, callbackRef) {
+      this.removeEventListener(evenType, callbackRef);
+    },
+
+    _handleDragAndDropGenericHandler: function(e) {
+      if (!e.target.matches(this.selector)) return;
+      this.callback.call(e.target, e);
     },
 
     _getCardPlaceholder: function() {
