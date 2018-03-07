@@ -59,25 +59,35 @@
 
 <body class="layout-vertical">
 
-
   <div class="layout-horizontal header">
     <h1 class="layout-flex page-title font-title">Kanban</h1>
     <div class="project-counter font-body1">Total projects: <span id="projectCount">0</span></div>
   </div>
 
-  <form class="add-project-form">
+  <div class="add-project-form">
     <label class="font-body1">Add Project: </label>
-    <input type="text" class="project-name-input" name="projectName" placeholder="write and press enter">
-  </form>
+    <input id="addProjectInput" type="text" class="project-name-input" name="projectName" placeholder="write and press enter">
+  </div>
 
   <at-core-kanban id="coreKanban" class="layout-flex"></at-core-kanban>
 
-  <form class="add-list-form">
+  <div class="add-list-form">
     <label class="font-body1">Add List: </label>
-    <input type="text" class="list-name-input" name="listName" placeholder="write and press enter">
-  </form>
+    <input id="addListInput" type="text" class="list-name-input" name="listName" placeholder="write and press enter">
+  </div>
 
   <script>
+    var UI = {
+      projectCountElt: null,
+    };
+
+    function setProjectCount(count) {
+      if (!UI.projectCountElt) {
+        UI.projectCountElt = document.getElementById('projectCount');
+      }
+      UI.projectCountElt.textContent = count;
+    }
+
     document.addEventListener('WebComponentsReady', function() {
       var coreKanban = document.getElementById('coreKanban');
 
@@ -99,6 +109,32 @@
 
       // coreKanban.view = '<div class="my-item font-body1">{{title}} - This is sparta!!!</div>';
       coreKanban.itemComponent = "kanban-item";
+
+      setProjectCount(coreKanban.items.length);
+
+      var addProjectInput = document.getElementById('addProjectInput');
+      addProjectInput.addEventListener('change', function(event) {
+        var value = event.target.value;
+        var currCount = coreKanban.items.length;
+        var newItem = {
+          prio: "low",
+          id: currCount + 1,
+          title: value
+        };
+
+        coreKanban.push('items', newItem);
+        setProjectCount(currCount + 1);
+      });
+
+      var addListInput = document.getElementById('addListInput');
+      addListInput.addEventListener('change', function(event) {
+        var value = event.target.value;
+        var newColumn = {
+          id: value.replace(" ", ''),
+          title: value
+        };
+        coreKanban.push('columns', newColumn);
+      });
 
     });
   </script>
