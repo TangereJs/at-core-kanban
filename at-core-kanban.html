@@ -433,6 +433,13 @@
       } else if (t.classList.contains('kanban-item-placeholder')) {
         Polymer.dom(destColumn).insertBefore(child, t);
       }
+
+      var evtDetail = {
+        value: destColumn.id,
+        odlValue: srcColumnId,
+        item: JSON.parse(JSON.stringify(item))
+      };
+      this.fire('value-changed', evtDetail, { bubbles: false });
     },
 
     //

@@ -91,6 +91,10 @@
     document.addEventListener('WebComponentsReady', function() {
       var coreKanban = document.getElementById('coreKanban');
 
+      coreKanban.addEventListener('value-changed', function(event) {
+        console.log(JSON.stringify(event.detail, null, ' '));
+      });
+
       var columns = [
         { id: "low", title: "Low" },
         { id: "high", title: "High" }
