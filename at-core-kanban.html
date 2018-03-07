@@ -12,6 +12,12 @@
         display: block;
         box-sizing: border-box;
 
+        background-color: #069;
+        color: #fff;
+
+        padding: 20px;
+        padding-right: 15px;
+
         border: 1px solid purple;
         padding: 8px;
       }
@@ -26,6 +32,16 @@
 
       .kanban-item {
         margin-top: 4px;
+        border-radius: 5px;
+        background: #fff;
+        border: 1px solid #ddd;
+        padding: 8px 10px;
+        transition: all 0.3 ease;
+        color: #000
+      }
+
+      .kanban-item:hover {
+        opacity: 0.5;
       }
 
       .kanban-item.dragging {
@@ -299,7 +315,6 @@
 
       columns.forEach(function(column) {
         var columnElt = this.create('at-core-kanban-column', { id: column.id, title: column.title });
-        Polymer.dom(columnElt).classList.add('layout-flex');
         Polymer.dom(columnElt).classList.add('kanban-column');
 
         Polymer.dom(this.$.columnContainer).appendChild(columnElt);
@@ -491,7 +506,7 @@
     _live: function(eventType, selector, callback) {
       // @cleanup function(e) should be bound so that it can be removed on detach
       document.addEventListener(eventType, function (e) {
-        if (e.target.webkitMatchesSelector(selector)) {
+        if (e.target.matches(selector)) {
           callback.call(e.target, e);
         }
       }, false);

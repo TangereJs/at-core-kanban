@@ -7,19 +7,44 @@
       :host {
         display: block;
         box-sizing: border-box;
-        padding: 4px;
+
+        width: 250px;
+        flex: 0 0 250px;
+        vertical-align: top;
+        overflow: auto;
+        padding: 8px;
+        border-radius: 8px;
+        background: #f8f8f8;
+        margin-right: 15px;
+        margin-bottom: 10px;
+        box-shadow: 0 0 5px rgba(0,0,0,0.4);
+
 
         min-height: 640px;
+        color: #999;
+      }
 
-        border: 1px solid crimson;
+      .column-title {
+        text-transform: uppercase;
+        padding: 5px;
+        text-overflow: ellipsis;
+        user-select: none;
+      }
+
+      .item-count {
+        line-height: 28px;
+      }
+
+      .divider {
+        margin: 0 0 0.5em 0;
       }
     </style>
 
     <div class="layout-horizontal">
-      <label class="layout-flex font-body1">[[title]]</label>
-      <div class="font-body1">[[_itemCount]]</div>
+      <label class="layout-flex font-body1 column-title">[[title]]</label>
+      <div class="font-body1 item-count">[[_itemCount]]</div>
     </div>
-    <hr>
+    <hr class="divider">
     <div class="layout-vertical">
       <content id="contentContainer"></content>
     </div>
