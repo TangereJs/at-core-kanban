@@ -118,14 +118,6 @@
         }
       },
 
-      layout: {
-        type: String,
-        value: "list",
-        notify: true,
-        xtype: "enum",
-        available: "card,list"
-      },
-
       itemComponent: {
         type: String,
         value: "",
@@ -153,17 +145,6 @@
         xgridcols: "12"
       },
 
-      indicator: {
-        type: Boolean,
-        value: false,
-        reflectToAttribute: true
-      },
-
-      height: {
-        type: String,
-        value: "120px"
-      },
-
       emptyList: {
         type: String,
         value: "No data found"
@@ -178,7 +159,7 @@
     }],
 
     observers: [
-      '_initialize(columns.*, columnPath, items.*, layout, itemComponent, cardWidth, cardHeight, view, indicator, height, emptyList)'
+      '_initialize(columns.*, columnPath, items.*, itemComponent, cardWidth, cardHeight, view, emptyList)'
     ],
 
     _vm: {
@@ -235,18 +216,18 @@
       this.$.carbonMessage.html = '';
     },
 
-    _initialize: function(columnsSplices, columnPath, itemsSplices, layout, itemComponent, cardWidth, cardHeight, view, indicator, height, emptyList) {
+    _initialize: function(columnsSplices, columnPath, itemsSplices, itemComponent, cardWidth, cardHeight, view, emptyList) {
 
       this._showSpinner();
       this._clearMessage();
 
       var self = this;
       this.debounce('debounce-internal-initialize', function() {
-        self._internalInitialize(columnsSplices, columnPath, itemsSplices, layout, itemComponent, cardWidth, cardHeight, view, indicator, height, emptyList);
+        self._internalInitialize(columnsSplices, columnPath, itemsSplices, itemComponent, cardWidth, cardHeight, view, emptyList);
       }, 100);
     },
 
-    _internalInitialize: function(columnsSplices, columnPath, itemsSplices, layout, itemComponent, cardWidth, cardHeight, view, indicator, height, emptyList) {
+    _internalInitialize: function(columnsSplices, columnPath, itemsSplices, itemComponent, cardWidth, cardHeight, view, emptyList) {
 
       var columns = columnsSplices.value;
       var items = itemsSplices.value;
@@ -284,7 +265,7 @@
       this.importHref(
         importUrl,
         function() { // success callback
-          self._render(columns, columnPath, items, layout, elementName, cardWidth, cardHeight, view, height);
+          self._render(columns, columnPath, items, elementName, cardWidth, cardHeight, view);
         },
         function() { // error callback
           Polymer.signal("busy-end");
@@ -299,12 +280,10 @@
       );
     },
 
-    // @CODEFOR layout
     // @CODEFOR cardWidth
     // @CODEFOR cardHeight
-    // @CODEFOR height
 
-    _render: function(columns, columnPath, items, layout, elementName, cardWidth, cardHeight, view, height) {
+    _render: function(columns, columnPath, items, elementName, cardWidth, cardHeight, view) {
 
       this._hideSpinner();
       this._clearMessage();
