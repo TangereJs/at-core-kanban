@@ -39,7 +39,6 @@
         background: #fff;
         border: 1px solid #ddd;
         padding: 8px 10px;
-        transition: all 0.3 ease;
         color: #000
       }
 
@@ -290,9 +289,6 @@
       );
     },
 
-    // @CODEFOR cardWidth
-    // @CODEFOR cardHeight
-
     _render: function(columns, columnPath, items, elementName, cardWidth, cardHeight, view) {
 
       this._hideSpinner();
@@ -307,6 +303,16 @@
         Polymer.dom(columnElt).classList.add('kanban-column');
 
         Polymer.dom(this.$.columnContainer).appendChild(columnElt);
+
+        if (cardWidth) {
+          Polymer.dom.flush();
+          var paddingLeft = parseInt(columnElt.getComputedStyleValue('padding-left'));
+          var paddingRight = parseInt(columnElt.getComputedStyleValue('padding-right'));
+          var padding = paddingLeft + paddingRight;
+          var columnWidth = +cardWidth + padding;
+          columnElt.style.width = columnWidth + 'px';
+          columnElt.style.flex = '0 0 ' + columnWidth + 'px';
+        }
 
       }, this);
 
@@ -334,6 +340,20 @@
 
         var columnElt = this.$$('#'+columnId);
         Polymer.dom(columnElt).appendChild(itemElt);
+
+        if (cardHeight) {
+          Polymer.dom.flush();
+          var paddingTop = parseInt(itemElt.getComputedStyleValue('padding-top'));
+          var paddingBottom = parseInt(itemElt.getComputedStyleValue('padding-bottom'));
+          var padding = paddingTop + paddingBottom;
+
+          var borderTopWidth = parseInt(itemElt.getComputedStyleValue('border-top-width'));
+          var borderBottomWidth = parseInt(itemElt.getComputedStyleValue('border-bottom-width'));
+          var borderWidth = borderTopWidth + borderBottomWidth;
+
+          var itemHeight = +cardHeight - padding - borderWidth;
+          itemElt.style.height = itemHeight + 'px';
+        }
       }, this);
 
       Polymer.dom.flush();

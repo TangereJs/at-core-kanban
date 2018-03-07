@@ -69,7 +69,7 @@
     <input id="addProjectInput" type="text" class="project-name-input" name="projectName" placeholder="write and press enter">
   </div>
 
-  <at-core-kanban id="coreKanban" class="layout-flex"></at-core-kanban>
+  <at-core-kanban id="coreKanban" class="layout-flex" card-height="75" card-width="275"></at-core-kanban>
 
   <div class="add-list-form">
     <label class="font-body1">Add List: </label>
@@ -107,8 +107,8 @@
       ];
       coreKanban.items = items;
 
-      // coreKanban.view = '<div class="my-item font-body1">{{title}} - This is sparta!!!</div>';
-      coreKanban.itemComponent = "kanban-item";
+      coreKanban.view = '<div class="my-item font-body1">{{title}} - This is sparta!!!</div>';
+      // coreKanban.itemComponent = "kanban-item";
 
       setProjectCount(coreKanban.items.length);
 
