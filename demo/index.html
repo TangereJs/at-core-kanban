@@ -7,19 +7,75 @@
   <title>at-core-kanban demo page</title>
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../../at-core-style-classes/at-core-style-classes.html" />
   <link rel="import" href="../../at-theme/at-theme.html">
   <link rel="import" href="../at-core-kanban.html">
 
-  <style>
+  <style is="custom-style" include="at-core-style-classes">
+    body {
+      margin: 0;
+      height: calc(100vh);
+    }
+
     .my-item {
       padding: 4px;
       margin-top: 4px;
     }
+
+    .header {
+      padding: 20px;
+      height: 30px;
+      background-color: #09446b;
+      color: #fff;
+    }
+
+    .page-title {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .project-counter {
+      font-weight: bold;
+      margin: 0;
+      padding: 5px 10px;
+      font-size: 16px;
+    }
+
+    .add-project-form, .add-list-form {
+      padding: 10px 20px;
+      background: #0c79c1;
+
+      color: #fff;
+    }
+
+    .project-name-input, .list-name-input {
+      padding: 5px 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
   </style>
 </head>
 
-<body>
-  <at-core-kanban id="coreKanban"></at-core-kanban>
+<body class="layout-vertical">
+
+
+  <div class="layout-horizontal header">
+    <h1 class="layout-flex page-title font-title">Kanban</h1>
+    <div class="project-counter font-body1">Total projects: <span id="projectCount">0</span></div>
+  </div>
+
+  <form class="add-project-form">
+    <label class="font-body1">Add Project: </label>
+    <input type="text" class="project-name-input" name="projectName" placeholder="write and press enter">
+  </form>
+
+  <at-core-kanban id="coreKanban" class="layout-flex"></at-core-kanban>
+
+  <form class="add-list-form">
+    <label class="font-body1">Add List: </label>
+    <input type="text" class="list-name-input" name="listName" placeholder="write and press enter">
+  </form>
 
   <script>
     document.addEventListener('WebComponentsReady', function() {
