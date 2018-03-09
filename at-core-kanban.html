@@ -399,13 +399,13 @@
       if (!this._isDragging) return false;
 
       var t = e.target;
-      var itemId = +e.dataTransfer.getData('text');
+      var itemId = e.dataTransfer.getData('text');
 
       // find the item in the this.items array
       var item = false;
       for (var i = 0; i < this.items.length && !item; i++) {
         var curr = this.items[i];
-        item = curr.id.toString() === itemId.toString() ? curr : false;
+        item = curr.id === itemId ? curr : false;
       }
 
       // find out which column was dragged from
@@ -419,7 +419,7 @@
         var valueProp = curr[this._vm.itemElementValuePropertyName];
         // ignore placeholder
         if (!valueProp) continue;
-        child = valueProp.id.toString() === itemId.toString() ? curr : false;
+        child = valueProp.id === itemId ? curr : false;
       }
 
       Polymer.dom(Polymer.dom(child).parentNode).removeChild(child);
