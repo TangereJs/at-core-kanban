@@ -102,12 +102,12 @@
       coreKanban.columns = columns;
 
       var items = [
-        { prio: "low", id: 1, title: "Test 1" },
-        { prio: "high", id: 2, title: "Test 2" },
-        { prio: "low", id: 3, title: "Test 3" },
-        { prio: "high", id: 4, title: "Test 4" },
-        { prio: "low", id: 5, title: "Test 5" },
-        { prio: "high", id: 6, title: "Test 6" }
+        { column: "low", id: 1, title: "Test 1" },
+        { column: "high", id: 2, title: "Test 2" },
+        { column: "low", id: 3, title: "Test 3" },
+        { column: "high", id: 4, title: "Test 4" },
+        { column: "low", id: 5, title: "Test 5" },
+        { column: "high", id: 6, title: "Test 6" }
       ];
       coreKanban.items = items;
 
@@ -121,7 +121,7 @@
         var value = event.target.value;
         var currCount = coreKanban.items.length;
         var newItem = {
-          prio: "low",
+          column: "low",
           id: currCount + 1,
           title: value
         };
