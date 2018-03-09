@@ -42,18 +42,26 @@
       font-size: 16px;
     }
 
-    .add-project-form, .add-list-form {
+    .add-project-form,
+    .add-list-form {
       padding: 10px 20px;
       background: #0c79c1;
 
       color: #fff;
     }
 
-    .project-name-input, .list-name-input {
+    .kanban-board {
+      background-color: #069;
+      color: #fff;
+    }
+
+    .project-name-input,
+    .list-name-input {
       padding: 5px 10px;
       border-radius: 4px;
       border: 1px solid #ccc;
     }
+
   </style>
 </head>
 
@@ -69,7 +77,7 @@
     <input id="addProjectInput" type="text" class="project-name-input" name="projectName" placeholder="write and press enter">
   </div>
 
-  <at-core-kanban id="coreKanban" class="layout-flex" card-height="75" card-width="275"></at-core-kanban>
+  <at-core-kanban id="coreKanban" class="layout-flex kanban-board" card-height="75" card-width="275"></at-core-kanban>
 
   <div class="add-list-form">
     <label class="font-body1">Add List: </label>
@@ -141,6 +149,7 @@
       });
 
     });
+
   </script>
 </body>
 
