@@ -314,10 +314,16 @@
       }, this);
 
       items.forEach(function(item) {
+        // find out if column for this item exists
+        // if it doesn't skip the item
+        // in playground when items are set before columns this code prevents errors
+        var columnId = this._getObjPath(item, columnPath);
+        var columnElt = this.$$('#'+columnId);
+        if (!columnElt) return;
+
         var itemElt = this.create(elementName);
         Polymer.dom(itemElt).classList.add('kanban-item');
         Polymer.dom(itemElt).setAttribute('draggable', true);
-        var columnId = this._getObjPath(item, columnPath);
 
         item._session = Tangere.session;
 
@@ -335,7 +341,6 @@
           this._vm.itemElementValuePropertyName = 'item';
         }
 
-        var columnElt = this.$$('#'+columnId);
         Polymer.dom(columnElt).appendChild(itemElt);
 
         if (cardHeight) {
@@ -400,7 +405,7 @@
       var item = false;
       for (var i = 0; i < this.items.length && !item; i++) {
         var curr = this.items[i];
-        item = curr.id === itemId ? curr : false;
+        item = curr.id.toString() === itemId.toString() ? curr : false;
       }
 
       // find out which column was dragged from
@@ -414,7 +419,7 @@
         var valueProp = curr[this._vm.itemElementValuePropertyName];
         // ignore placeholder
         if (!valueProp) continue;
-        child = valueProp.id === itemId ? curr : false;
+        child = valueProp.id.toString() === itemId.toString() ? curr : false;
       }
 
       Polymer.dom(Polymer.dom(child).parentNode).removeChild(child);
